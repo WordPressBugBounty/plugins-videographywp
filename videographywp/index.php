@@ -3,11 +3,13 @@
 Plugin Name: VideographyWP Lite
 Plugin URI: https://videographywp.com
 Description: Add featured YouTube videos to any WordPress post and additionally import title, description and featured image.
-Version: 1.0.18
+Version: 1.0.20
 Author: CodeFlavors
 Author URI: https://videographywp.com
 Domain Path: /languages
 Text Domain: videographywp
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */	
 
 // No direct access
@@ -46,7 +48,7 @@ define( 'CVWP_URL'		, plugin_dir_url(__FILE__) );
  * Plugin version
  * @var string
  */
-define( 'CVWP_VERSION'	, '1.0.18');
+define( 'CVWP_VERSION'	, '1.0.20');
 /**
  * Query videos by video URL
  * @var boolean

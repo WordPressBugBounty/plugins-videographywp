@@ -1,10 +1,12 @@
-=== WordPress Featured Video - VideographyWP ===
+=== Featured Video for WordPress - VideographyWP ===
 Contributors: codeflavors, constantin.boiangiu
 Tags:  video plugin, vimeo, video, featured video, YouTube
-Requires at least: 5.6
-Tested up to: 6.5.3
+Requires at least: 6.0
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.18
+Stable tag: 1.0.20
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 WordPress featured video plugin that allows you to create video posts from YouTube videos. 
 
@@ -61,6 +63,10 @@ This WordPress video plugin is compatible with any WP theme that follows the cod
 https://youtu.be/6xye7Fddttk
 
 == Changelog ==
+= 1.0.20 =
+- Solved a bug that could cause vulnerability to Cross Site Scripting (XSS);
+- Verified compatibility with WordPress 6.9.
+
 = 1.0.18 =
 - Implemented filter 'cvwp_embed_css_class' that allows new CSS classes to be added to embeds made by VideographyWP. [How to use the filter](https://gist.github.com/constantin-b/ba4665ccd01605faa779f7176838b597 "How to use filter 'cvwp_embed_css_class'")
 

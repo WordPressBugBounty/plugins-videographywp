@@ -236,27 +236,114 @@ class CVWP_Admin extends CVWP_Ajax_Actions{
 		wp_redirect( menu_page_url( 'cvwp-about', false ) );
 		die();
 	}
-	
+
 	/**
-	 * Action callback
-	 * 
-	 * Saves video options onpost save action.
-	 *
-	 * @param integer $post_id
-	 * @param object $post
-	 * @param boolean $update
-	 * @return void
-	 */
-	public function save_video_options( $post_id, $post, $update ){
-		if( !isset( $_POST['cvwp_options_nonce'] ) || !wp_verify_nonce( $_POST['cvwp_options_nonce'], 'cvwp-save-post-video-options' ) ){
-			return;
-		}
-		
-		$video_options = $_POST['cvwp_post'];
-		cvwp_update_post_options( $post_id, $video_options );
-	}
-	
-	/**
+     * Saves video options on post save.
+     *
+     * @param int     $post_id
+     * @param WP_Post $post
+     * @param bool    $update
+     *
+     * @return void
+     */
+    public function save_video_options( $post_id, $post, $update ) {
+        // Basic guards
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        if ( ! isset( $_POST['cvwp_options_nonce'] )
+            || ! wp_verify_nonce( $_POST['cvwp_options_nonce'], 'cvwp-save-post-video-options' ) ) {
+            return;
+        }
+
+        if ( ! isset( $_POST['cvwp_post'] ) || ! is_array( $_POST['cvwp_post'] ) ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        $raw = wp_unslash( $_POST['cvwp_post'] );
+        $clean = [];
+
+        // Allow only permitted positions
+        if ( isset( $raw['embed_position'] ) ) {
+	        $allowed_positions = [ 'featured_image','above_content','below_content','shortcode','button','no_embed' ];
+            $embed_position    = sanitize_text_field( $raw['embed_position'] );
+
+            if ( in_array( $embed_position, $allowed_positions, true ) ) {
+                $clean['embed_position'] = $embed_position;
+            } else {
+                // fallback rezonabil
+                $clean['embed_position'] = 'before';
+            }
+        }
+
+        $clean['lazy_load'] = ! empty( $raw['lazy_load'] ) ? 1 : 0;
+
+        // Video subarray
+        if ( isset( $raw['video'] ) && is_array( $raw['video'] ) ) {
+            $clean['video'] = [];
+
+            // text simple
+            if ( isset( $raw['video']['source'] ) ) {
+                $clean['video']['source'] = sanitize_text_field( $raw['video']['source'] );
+            }
+
+            if ( isset( $raw['video']['video_id'] ) ) {
+                $clean['video']['video_id'] = sanitize_text_field( $raw['video']['video_id'] );
+            }
+
+            // duration – numeric
+            if ( isset( $raw['video']['duration'] ) ) {
+                $clean['video']['duration'] = absint( $raw['video']['duration'] );
+            }
+
+            // aspect – text
+            if ( isset( $raw['video']['aspect'] ) ) {
+                $clean['video']['aspect'] = sanitize_text_field( $raw['video']['aspect'] );
+            }
+
+            // width – numeric
+            if ( isset( $raw['video']['width'] ) ) {
+                $clean['video']['width'] = absint( $raw['video']['width'] );
+            }
+
+            // volume – numeric 0–100
+            if ( isset( $raw['video']['volume'] ) ) {
+                $volume = absint( $raw['video']['volume'] );
+                $volume = max( 0, min( 100, $volume ) );
+                $clean['video']['volume'] = $volume;
+            }
+
+            // checkboxes (bool → 0/1)
+            $bool_keys = [
+                'fullscreen',
+                'nocookie',
+                'controls',
+                'autohide',
+                'modestbranding',
+                'loop',
+            ];
+
+            foreach ( $bool_keys as $key ) {
+                $clean['video'][ $key ] = ! empty( $raw['video'][ $key ] ) ? 1 : 0;
+            }
+
+            // iv_load_policy – special (0/3)
+            if ( isset( $raw['video']['iv_load_policy'] ) ) {
+                $value = absint( $raw['video']['iv_load_policy'] );
+                $clean['video']['iv_load_policy'] = in_array( $value, [ 1, 3 ], true ) ? $value : 1;
+            }
+        }
+
+        cvwp_update_post_options( $post_id, $clean );
+    }
+
+
+    /**
 	 * Implements plugin meta boxes to be displayed on post edit screen
 	 *
 	 * @uses add_meta_box()
